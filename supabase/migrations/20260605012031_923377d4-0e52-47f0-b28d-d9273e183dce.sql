@@ -1,0 +1,1 @@
+CREATE POLICY "super_admin_delete_suppressed_emails" ON public.suppressed_emails FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'super_admin'));

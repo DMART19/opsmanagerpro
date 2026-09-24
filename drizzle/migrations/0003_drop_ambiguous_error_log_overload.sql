@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.upsert_error_log(uuid, text, text, text, text, text, text, integer, text, text, jsonb, uuid, text);

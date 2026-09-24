@@ -1,0 +1,1 @@
+UPDATE requirement_definitions SET user_id = '797d4428-cede-4486-9e3e-72de3eb70440' WHERE user_id IS NULL;

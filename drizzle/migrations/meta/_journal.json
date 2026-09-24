@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790172852935,
+      "tag": "0000_bound_telemetry_insert_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790176432145,
+      "tag": "0001_feature_flags_admin_only_read",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790177311864,
+      "tag": "0002_guard_user_scoped_definer_functions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790177348502,
+      "tag": "0003_drop_ambiguous_error_log_overload",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790263576703,
+      "tag": "0004_tighten_trial_gating_and_fix_expiry_cron",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# OpsManagerPro
+
+> Enterprise operations management for warehouse teams: real-time inventory, team scheduling, shipment tracking, credential compliance, and capacity planning.
+
+OpsManagerPro replaces spreadsheets with a single workspace for managing physical assets, containers, people, credentials, calendar events, pallets, and warehouse layout. It is built for operations leads, safety managers, and warehouse supervisors.
+
+## Pages
+
+- [Home](/): Product overview, features, pricing, and sign-up.
+- [Product tour](/tour): Interactive walkthrough of the main modules without signing in.
+- [Sign in / Sign up](/auth): Create an account or sign in.
+
+## Legal
+
+- [Terms of Service](/legal/terms): Terms governing use of the product.
+- [Privacy Policy](/legal/privacy): How user and workspace data is handled.
+- [Acceptable Use Policy](/legal/acceptable-use): Acceptable use of the platform.
+- [Cookie Policy](/legal/cookies): Cookie usage and tracking.
+- [Security Policy](/legal/security): Security practices and disclosures.
+- [Contact](/legal/contact): Legal and compliance contact.
