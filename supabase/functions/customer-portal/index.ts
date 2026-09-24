@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
   const d = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CUSTOMER-PORTAL] ${step}${d}`);
 };
@@ -33,17 +33,31 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user) throw new Error("User not authenticated");
 
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user. Please subscribe to a plan first.");
+    // The workspace's Stripe customer is assigned by our signed webhook. An
+    // email lookup is ambiguous when Stripe has more than one matching customer.
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } },
+    );
+    const { data: plan, error: planError } = await admin
+      .from("workspace_plans")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (planError) throw new Error("Unable to look up the workspace billing account");
+    if (!plan?.stripe_customer_id) {
+      return new Response(JSON.stringify({ error: "No billing account is linked to this workspace yet." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
     }
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
+    const customerId = plan.stripe_customer_id;
 
     const ALLOWED_ORIGINS = new Set([
       "https://app.opsmanagerpro.com",
