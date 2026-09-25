@@ -5,15 +5,12 @@ import heroAsset from "@/assets/hero-3d.png.asset.json";
 
 interface HeroSectionProps {
   onGetStarted: () => void;
-  onSignIn: () => void;
-  onViewPricing: () => void;
-  onSeeHowItWorks?: () => void;
+  onRequestDemo: () => void;
 }
 
 export const HeroSection = ({
   onGetStarted,
-  onViewPricing,
-  onSeeHowItWorks,
+  onRequestDemo,
 }: HeroSectionProps) => {
   const showHeadline = useDelayedVisibility(100);
   const showSubheadline = useDelayedVisibility(250);
@@ -33,14 +30,16 @@ export const HeroSection = ({
         <div className="grid lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-14 items-center">
           {/* Left: copy */}
           <div className={`flex flex-col text-center lg:text-left transition-all duration-700 ease-apple ${showHeadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+            <p className="mb-4 text-xs sm:text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+              Built for small, hands-on operations teams
+            </p>
             <h1 className="text-[2rem] xs:text-[2.25rem] sm:text-6xl lg:text-[4.5rem] font-semibold mb-5 sm:mb-6 leading-[1.05] sm:leading-[1.02] tracking-tight text-foreground">
-              Plan every load in{" "}
-              <span className="text-gradient-primary">3D</span>{" "}
-              before it ships.
+              Know what you have.{" "}
+              <span className="text-gradient-primary">Keep work moving.</span>
             </h1>
 
             <p className={`text-[15px] sm:text-lg text-muted-foreground mb-7 sm:mb-8 leading-relaxed max-w-xl lg:mx-0 mx-auto transition-all duration-700 ease-apple ${showSubheadline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-              One workspace for your inventory, your team, and your loads. Build pallets and trailers in 3D, then let AI plan the load from your spreadsheet.
+              Replace spreadsheets, paper logs, and scattered tools with one clear workspace for inventory, locations, team tasks, and daily operations.
             </p>
 
             {/* Mobile-only hero visual — sits between subheadline and CTAs for a stronger visual break */}
@@ -52,7 +51,7 @@ export const HeroSection = ({
                   alt="Interactive 3D pallet and trailer planning visualization"
                   className="w-full h-auto"
                   loading="eager"
-                  {...({ fetchpriority: "high" } as any)}
+                  fetchPriority="high"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
               </div>
@@ -68,16 +67,14 @@ export const HeroSection = ({
                   Start Free Trial
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </Button>
-                {onSeeHowItWorks && (
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto gap-2.5 h-13 sm:h-14 px-7 sm:px-8 text-[15px] font-semibold rounded-full"
-                    onClick={onSeeHowItWorks}
-                  >
-                    See How It Works
-                  </Button>
-                )}
+                <Button
+                  size="lg"
+                  variant="link"
+                  className="w-full sm:w-auto h-13 sm:h-14 px-4 text-[15px] font-medium text-muted-foreground hover:text-foreground"
+                  onClick={onRequestDemo}
+                >
+                  Request a Demo
+                </Button>
               </div>
               <p className="text-[12.5px] sm:text-sm text-foreground/60 mt-4">
                 Free for 14 days · No credit card · Set up in 10 minutes
@@ -93,7 +90,7 @@ export const HeroSection = ({
               alt="Interactive 3D pallet and trailer planning visualization"
               className="w-full h-auto rounded-2xl"
               loading="eager"
-              {...({ fetchpriority: "high" } as any)}
+              fetchPriority="high"
             />
           </div>
         </div>

@@ -4,13 +4,12 @@ import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 interface FinalCTASectionProps {
   onGetStarted: () => void;
-  onSignIn: () => void;
-  onSeeHowItWorks?: () => void;
+  onRequestDemo: () => void;
 }
 
 export const FinalCTASection = ({
   onGetStarted,
-  onSeeHowItWorks,
+  onRequestDemo,
 }: FinalCTASectionProps) => {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.4 });
 
@@ -47,16 +46,14 @@ export const FinalCTASection = ({
             Start Free Trial
             <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
           </Button>
-          {onSeeHowItWorks && (
-            <Button
-              size="lg"
-              variant="outline"
-              className="gap-2.5 h-14 px-8 text-[15px] font-medium rounded-full"
-              onClick={onSeeHowItWorks}
-            >
-              See How It Works
-            </Button>
-          )}
+          <Button
+            size="lg"
+            variant="link"
+            className="h-14 px-5 text-[15px] font-medium text-muted-foreground hover:text-foreground"
+            onClick={onRequestDemo}
+          >
+            Request a Demo
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground mt-5">Free for 14 days · No credit card</p>
       </div>
