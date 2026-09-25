@@ -3046,24 +3046,33 @@ export type Database = {
       product_events: {
         Row: {
           created_at: string
+          dedupe_key: string | null
+          event_source: string
           event_type: string
           id: string
+          is_test: boolean
           metadata: Json | null
           user_id: string | null
           workspace_id: string | null
         }
         Insert: {
           created_at?: string
+          dedupe_key?: string | null
+          event_source?: string
           event_type: string
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           user_id?: string | null
           workspace_id?: string | null
         }
         Update: {
           created_at?: string
+          dedupe_key?: string | null
+          event_source?: string
           event_type?: string
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           user_id?: string | null
           workspace_id?: string | null
@@ -5147,6 +5156,7 @@ export type Database = {
           created_at: string
           date_format: string | null
           default_view: string | null
+          exclude_from_metrics: boolean
           has_seed_data: boolean | null
           id: string
           measurement_unit: string | null
@@ -5163,6 +5173,7 @@ export type Database = {
           created_at?: string
           date_format?: string | null
           default_view?: string | null
+          exclude_from_metrics?: boolean
           has_seed_data?: boolean | null
           id?: string
           measurement_unit?: string | null
@@ -5179,6 +5190,7 @@ export type Database = {
           created_at?: string
           date_format?: string | null
           default_view?: string | null
+          exclude_from_metrics?: boolean
           has_seed_data?: boolean | null
           id?: string
           measurement_unit?: string | null
@@ -5310,6 +5322,15 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      launch_funnel_daily: {
+        Row: {
+          event_count: number | null
+          event_date: string | null
+          event_type: string | null
+          workspace_count: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
