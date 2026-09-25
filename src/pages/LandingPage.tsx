@@ -10,6 +10,14 @@ import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { LegalFooter } from "@/components/LegalFooter";
 import { useReveal } from "@/hooks/useReveal";
 import { signupUrl, type PublicPlanId } from "@/lib/pending-plan";
+import {
+  trackHomepageCta,
+  withHomepageAttribution,
+  type HomepageCtaPlacement,
+} from "@/lib/landing-analytics";
+
+const DEMO_REQUEST_URL =
+  "mailto:support@opsmanagerpro.com?subject=OpsManagerPro%20demo%20request";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -28,8 +36,21 @@ const LandingPage = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleGetStarted = () => navigate(signupUrl());
-  const handleSelectPlan = (planId: PublicPlanId) => navigate(signupUrl(planId));
+  const handleGetStarted = (placement: HomepageCtaPlacement) => {
+    trackHomepageCta("start_free_trial", placement);
+    navigate(withHomepageAttribution(signupUrl(), placement));
+  };
+
+  const handleSelectPlan = (planId: PublicPlanId) => {
+    trackHomepageCta("start_free_trial", "pricing_plan", planId);
+    navigate(withHomepageAttribution(signupUrl(planId), "pricing_plan", planId));
+  };
+
+  const handleRequestDemo = (placement: HomepageCtaPlacement) => {
+    trackHomepageCta("request_demo", placement);
+    window.location.href = DEMO_REQUEST_URL;
+  };
+
   const handleSignIn = () => navigate("/auth?mode=signin");
   const handleSeeHowItWorks = () => navigate("/tour");
 
@@ -41,11 +62,11 @@ const LandingPage = () => {
   return (
     <div className="dark min-h-screen bg-background text-foreground overflow-hidden relative">
       <Helmet>
-        <title>OpsManagerPro — Plan pallets and trailers in interactive 3D</title>
-        <meta name="description" content="Plan every pallet and trailer in interactive 3D, run AI load planning from a spreadsheet, and manage inventory, teams, and compliance in one platform." />
+        <title>OpsManagerPro — Inventory and daily operations for small teams</title>
+        <meta name="description" content="Replace spreadsheets, paper logs, and scattered tools with one clear workspace for inventory and daily operations." />
         <link rel="canonical" href="https://opsmanagerpro.com/" />
-        <meta property="og:title" content="OpsManagerPro — Plan pallets and trailers in interactive 3D" />
-        <meta property="og:description" content="Interactive 3D pallet and trailer planning, AI load plans, inventory, and compliance — built for warehouse teams." />
+        <meta property="og:title" content="OpsManagerPro — Inventory and daily operations for small teams" />
+        <meta property="og:description" content="Replace spreadsheets, paper logs, and scattered tools with one clear workspace for inventory and daily operations." />
         <meta property="og:url" content="https://opsmanagerpro.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://opsmanagerpro.com/og-image.jpg" />
@@ -85,7 +106,7 @@ const LandingPage = () => {
           </nav>
           <div className="flex items-center gap-4">
             <button onClick={handleSignIn} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sign in</button>
-            <button onClick={handleGetStarted} className="hidden sm:inline-flex h-8 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">Start Free Trial</button>
+            <button onClick={() => handleGetStarted("header")} className="hidden sm:inline-flex h-8 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">Start Free Trial</button>
           </div>
         </div>
       </div>
@@ -93,10 +114,8 @@ const LandingPage = () => {
       <main>
         {/* 1 — Hero */}
         <HeroSection
-          onGetStarted={handleGetStarted}
-          onSignIn={handleSignIn}
-          onViewPricing={scrollToPricing}
-          onSeeHowItWorks={handleSeeHowItWorks}
+          onGetStarted={() => handleGetStarted("hero")}
+          onRequestDemo={() => handleRequestDemo("hero")}
         />
 
         <div className="reveal"><SolutionSection /></div>
@@ -105,14 +124,13 @@ const LandingPage = () => {
         <div className="section-hairline max-w-6xl mx-auto" />
         <div className="reveal"><HowItWorksSteps /></div>
         <div className="section-hairline max-w-6xl mx-auto" />
-        <div className="reveal"><PricingSection onGetStarted={handleGetStarted} onSelectPlan={handleSelectPlan} showComparison={false} /></div>
+        <div className="reveal"><PricingSection onGetStarted={() => handleGetStarted("pricing")} onSelectPlan={handleSelectPlan} showComparison={false} /></div>
 
         <div className="section-hairline max-w-6xl mx-auto" />
         <div className="reveal">
           <FinalCTASection
-            onGetStarted={handleGetStarted}
-            onSignIn={handleSignIn}
-            onSeeHowItWorks={handleSeeHowItWorks}
+            onGetStarted={() => handleGetStarted("final")}
+            onRequestDemo={() => handleRequestDemo("final")}
           />
         </div>
       </main>
