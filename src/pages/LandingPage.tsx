@@ -15,6 +15,7 @@ import {
   withHomepageAttribution,
   type HomepageCtaPlacement,
 } from "@/lib/landing-analytics";
+import { trackEvent } from "@/lib/track-event";
 
 const DEMO_REQUEST_URL =
   "mailto:support@opsmanagerpro.com?subject=OpsManagerPro%20demo%20request";
@@ -23,6 +24,10 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
   useReveal([]);
+
+  useEffect(() => {
+    void trackEvent("website_visited");
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {

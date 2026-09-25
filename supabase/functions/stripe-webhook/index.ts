@@ -2,6 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { PLAN_ALLOWANCES, PLAN_MONTHLY_PRICE, type PlanTier } from "../_shared/plan-limits.ts";
 import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
+import { trackServerProductEvent } from "../_shared/track-product-event.ts";
 
 /** Customer-facing plan names, matching the pricing page. */
 const PLAN_DISPLAY_NAMES: Record<PlanTier, string> = {
@@ -170,7 +171,6 @@ Deno.serve(async (req) => {
   async function findWorkspace(opts: {
     userId?: string | null;
     customerId?: string | null;
-    email?: string | null;
   }) {
     if (opts.userId) {
       const { data } = await supabaseAdmin
@@ -187,22 +187,6 @@ Deno.serve(async (req) => {
         .eq("stripe_customer_id", opts.customerId)
         .maybeSingle();
       if (data) return data;
-    }
-    if (opts.email) {
-      // profiles mirrors the auth email, so this avoids paging every user.
-      const { data: profile } = await supabaseAdmin
-        .from("profiles")
-        .select("id")
-        .ilike("email", opts.email)
-        .maybeSingle();
-      if (profile) {
-        const { data } = await supabaseAdmin
-          .from("workspace_plans")
-          .select("id, user_id, workspace_status, last_stripe_event_at, plan")
-          .eq("user_id", profile.id)
-          .maybeSingle();
-        if (data) return data;
-      }
     }
     return null;
   }
@@ -342,6 +326,28 @@ Deno.serve(async (req) => {
       plan: update.plan ?? "unchanged",
     });
 
+    if (workspace.user_id && sub.status === "active") {
+      await trackServerProductEvent(supabaseAdmin, {
+        eventType: "subscription_activated",
+        userId: workspace.user_id,
+        workspaceId: workspace.user_id,
+        dedupeKey: `subscription_activated:${sub.id}`,
+        isTest: !event.livemode,
+        metadata: tier ? { plan: tier } : {},
+      });
+    }
+
+    if (workspace.user_id && sub.status === "canceled") {
+      await trackServerProductEvent(supabaseAdmin, {
+        eventType: "subscription_cancelled",
+        userId: workspace.user_id,
+        workspaceId: workspace.user_id,
+        dedupeKey: `subscription_cancelled:${sub.id}`,
+        isTest: !event.livemode,
+        metadata: tier ? { plan: tier } : {},
+      });
+    }
+
     // Welcome the workspace into its trial. The idempotency key is the
     // subscription id, so repeated trialing events send only one email.
     if (sub.status === "trialing") {
@@ -369,7 +375,6 @@ Deno.serve(async (req) => {
         const workspace = await findWorkspace({
           userId: session.metadata?.user_id ?? sub.metadata?.user_id ?? null,
           customerId: session.customer as string,
-          email: session.customer_details?.email ?? session.customer_email ?? null,
         });
 
         if (!workspace) {
@@ -424,6 +429,16 @@ Deno.serve(async (req) => {
             .eq("id", workspace.id);
           if (error) throw new Error(error.message);
           logStep("Subscription ended, workspace set to read only", { workspaceId: workspace.id });
+          if (workspace.user_id) {
+            await trackServerProductEvent(supabaseAdmin, {
+              eventType: "subscription_cancelled",
+              userId: workspace.user_id,
+              workspaceId: workspace.user_id,
+              dedupeKey: `subscription_cancelled:${sub.id}`,
+              isTest: !event.livemode,
+              metadata: workspace.plan ? { plan: workspace.plan } : {},
+            });
+          }
           break;
         }
 

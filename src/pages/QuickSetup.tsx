@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { seedSampleData } from "@/lib/seed-sample-data";
 import { WorkspaceInitScreen } from "@/components/onboarding/WorkspaceInitScreen";
+import { trackEvent } from "@/lib/track-event";
 
 const USE_CASE_OPTIONS = [
   { value: "inventory", label: "Inventory", icon: Package, description: "Track stock levels and items" },
@@ -51,7 +52,7 @@ export default function QuickSetup() {
 
       // Detect signup source from session metadata
       const identities = session.user.identities ?? [];
-      const hasOAuth = identities.some((i: any) => i.provider !== "email");
+      const hasOAuth = identities.some((identity) => identity.provider !== "email");
       const pendingInvite = localStorage.getItem("pending_workspace_invite");
       let detectedSource: string = "direct";
       if (pendingInvite) detectedSource = "invite";
@@ -61,7 +62,7 @@ export default function QuickSetup() {
       // Save signup source silently
       supabase
         .from("profiles")
-        .update({ signup_source: detectedSource } as any)
+        .update({ signup_source: detectedSource })
         .eq("id", session.user.id)
         .then(() => {});
 
@@ -71,7 +72,7 @@ export default function QuickSetup() {
         .eq("id", session.user.id)
         .single()
         .then(({ data }) => {
-          if ((data as any)?.onboarding_complete) {
+          if (data?.onboarding_complete) {
             navigate("/dashboard", { replace: true });
           } else {
             setCheckingAuth(false);
@@ -115,7 +116,7 @@ export default function QuickSetup() {
             display_name: displayName.trim(),
             primary_use_case: useCase,
             onboarding_complete: true,
-          } as any)
+          })
           .eq("id", userId),
         supabase
           .from("workspace_settings")
@@ -125,6 +126,8 @@ export default function QuickSetup() {
 
       if (profileResult.error) throw profileResult.error;
       if (workspaceResult.error) throw workspaceResult.error;
+
+      void trackEvent("workspace_created");
 
       await supabase.auth.updateUser({
         data: {

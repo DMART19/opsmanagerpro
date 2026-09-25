@@ -20,6 +20,8 @@ import { clearPendingVerificationEmail, isEmailVerified, setPendingVerificationE
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Shield } from "lucide-react";
 import { z } from "zod";
+import { trackEvent } from "@/lib/track-event";
+import type { Database } from "@/integrations/supabase/types";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -37,6 +39,11 @@ const signupSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Must contain a special character"),
 });
 
+const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Unknown error";
+
+type ErrorLogArgs = Database["public"]["Functions"]["upsert_error_log"]["Args"];
+
 /**
  * Ensures workspace records exist, with timeout protection.
  * Returns the redirect path.
@@ -51,8 +58,8 @@ async function resolvePostLoginRedirect(userId: string, isNewSignup = false): Pr
         p_user_id: userId,
       });
     }
-  } catch (err: any) {
-    console.warn("Pending invite acceptance failed:", err?.message);
+  } catch (error: unknown) {
+    console.warn("Pending invite acceptance failed:", errorMessage(error));
   }
 
   // Check super_admin role
@@ -71,26 +78,28 @@ async function resolvePostLoginRedirect(userId: string, isNewSignup = false): Pr
 
   // Ensure workspace integrity with 3s timeout
   try {
-    const integrityPromise = (supabase.rpc as any)('ensure_workspace_integrity', { p_user_id: userId });
+    const integrityPromise = supabase.rpc("ensure_workspace_integrity", { p_user_id: userId });
     await Promise.race([
       integrityPromise,
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
     ]);
-  } catch (err: any) {
-    console.warn("Workspace integrity check timed out or failed:", err?.message);
+  } catch (error: unknown) {
+    const message = errorMessage(error);
+    console.warn("Workspace integrity check timed out or failed:", message);
     try {
-      await (supabase.rpc as any)('upsert_error_log', {
+      const errorLog = {
         p_user_id: userId,
-        p_severity: 'warning',
-        p_message: `Workspace integrity check failed: ${err?.message}`,
+        p_severity: "warning",
+        p_message: `Workspace integrity check failed: ${message}`,
         p_stack_trace: null,
-        p_page_route: '/auth',
+        p_page_route: "/auth",
         p_browser_info: navigator.userAgent,
         p_api_endpoint: null,
         p_api_status_code: null,
         p_request_method: null,
-        p_error_hash: 'workspace_integrity_failure',
-      });
+        p_error_hash: "workspace_integrity_failure",
+      } as unknown as ErrorLogArgs;
+      await supabase.rpc("upsert_error_log", errorLog);
     } catch { /* swallow */ }
   }
 
@@ -100,11 +109,11 @@ async function resolvePostLoginRedirect(userId: string, isNewSignup = false): Pr
       .from("profiles")
       .update({
         last_login_at: new Date().toISOString(),
-      } as any)
+      })
       .eq("id", userId);
 
     // Increment login_count via raw increment
-    await (supabase.rpc as any)("increment_login_count", { p_user_id: userId }).catch(() => {});
+    await supabase.rpc("increment_login_count", { p_user_id: userId }).catch(() => {});
   } catch {
     // Non-critical
   }
@@ -146,7 +155,9 @@ export default function Auth() {
     try {
       const params = new URLSearchParams(window.location.search);
       nextOverride = safeInternalPath(params.get("next"));
-    } catch {}
+    } catch {
+      nextOverride = null;
+    }
 
     // If a plan was chosen before signup, land on billing with it preselected.
     // This never starts a subscription — it only preserves the choice.
@@ -184,6 +195,8 @@ export default function Auth() {
       navigate("/verify-email", { replace: true });
       return;
     }
+
+    window.setTimeout(() => void trackEvent("signup_completed"), 0);
 
     // Phase 2: gate sign-in on MFA challenge when user has a verified factor
     // and the current session has not yet satisfied aal2.

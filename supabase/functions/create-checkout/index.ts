@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { type PlanTier, PLAN_MONTHLY_PRICE } from "../_shared/plan-limits.ts";
+import { trackServerProductEvent } from "../_shared/track-product-event.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -133,15 +134,14 @@ serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const hasTrialledBefore = Boolean(plan?.trial_start_date);
-    const hasSubscribedBefore = Boolean(plan?.stripe_subscription_id);
-    const grantTrial = !hasTrialledBefore && !hasSubscribedBefore;
-
-    let customerId: string | undefined = plan?.stripe_customer_id ?? undefined;
-    if (!customerId) {
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-      if (customers.data.length > 0) customerId = customers.data[0].id;
+    if (plan?.stripe_subscription_id) {
+      return fail("A subscription is already linked to this workspace. Manage it in the billing portal.", 409);
     }
+
+    const hasTrialledBefore = Boolean(plan?.trial_start_date);
+    const grantTrial = !hasTrialledBefore;
+
+    const customerId: string | undefined = plan?.stripe_customer_id ?? undefined;
 
     const rawOrigin = req.headers.get("origin") || "";
     const origin = ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://opsmanagerpro.com";
@@ -171,6 +171,15 @@ serve(async (req) => {
     );
 
     logStep("Checkout session created", { sessionId: session.id, grantTrial });
+
+    await trackServerProductEvent(supabaseAdmin, {
+      eventType: "checkout_started",
+      userId: user.id,
+      workspaceId: user.id,
+      dedupeKey: `checkout_started:${session.id}`,
+      isTest: !session.livemode,
+      metadata: { plan: tier },
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 42537)
+Total output lines: 5724
+
 export type Json =
   | string
   | number
@@ -2708,362 +2711,29 @@ export type Database = {
           },
         ]
       }
-      manufacturers: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      mapping_templates: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          field_mappings: Json
-          id: string
-          name: string
-          table_name: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          field_mappings: Json
-          id?: string
-          name: string
-          table_name: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          field_mappings?: Json
-          id?: string
-          name?: string
-          table_name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      notification_settings: {
-        Row: {
-          admin_access_alerts: boolean | null
-          audit_reminders: boolean | null
-          certification_expiry_alerts: boolean | null
-          checkout_alerts: boolean | null
-          compliance_alerts: boolean | null
-          created_at: string
-          data_access_alerts: boolean | null
-          email_enabled: boolean | null
-          expiry_warning_days: number | null
-          id: string
-          in_app_enabled: boolean | null
-          large_export_alerts: boolean | null
-          large_export_threshold: number | null
-          maintenance_alerts: boolean | null
-          task_due_alerts: boolean | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_access_alerts?: boolean | null
-          audit_reminders?: boolean | null
-          certification_expiry_alerts?: boolean | null
-          checkout_alerts?: boolean | null
-          compliance_alerts?: boolean | null
-          created_at?: string
-          data_access_alerts?: boolean | null
-          email_enabled?: boolean | null
-          expiry_warning_days?: number | null
-          id?: string
-          in_app_enabled?: boolean | null
-          large_export_alerts?: boolean | null
-          large_export_threshold?: number | null
-          maintenance_alerts?: boolean | null
-          task_due_alerts?: boolean | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_access_alerts?: boolean | null
-          audit_reminders?: boolean | null
-          certification_expiry_alerts?: boolean | null
-          checkout_alerts?: boolean | null
-          compliance_alerts?: boolean | null
-          created_at?: string
-          data_access_alerts?: boolean | null
-          email_enabled?: boolean | null
-          expiry_warning_days?: number | null
-          id?: string
-          in_app_enabled?: boolean | null
-          large_export_alerts?: boolean | null
-          large_export_threshold?: number | null
-          maintenance_alerts?: boolean | null
-          task_due_alerts?: boolean | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      page_performance: {
-        Row: {
-          created_at: string
-          id: string
-          load_time_ms: number
-          page_route: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          load_time_ms: number
-          page_route: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          load_time_ms?: number
-          page_route?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      pallet_slots: {
-        Row: {
-          created_at: string
-          equipment_id: string | null
-          id: string
-          is_occupied: boolean
-          last_updated: string | null
-          occupancy_status: string | null
-          section_id: string
-          shipment_item_id: string | null
-          slot_code: string
-          slot_number: number
-        }
-        Insert: {
-          created_at?: string
-          equipment_id?: string | null
-          id?: string
-          is_occupied?: boolean
-          last_updated?: string | null
-          occupancy_status?: string | null
-          section_id: string
-          shipment_item_id?: string | null
-          slot_code: string
-          slot_number: number
-        }
-        Update: {
-          created_at?: string
-          equipment_id?: string | null
-          id?: string
-          is_occupied?: boolean
-          last_updated?: string | null
-          occupancy_status?: string | null
-          section_id?: string
-          shipment_item_id?: string | null
-          slot_code?: string
-          slot_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pallet_slots_equipment_id_fkey"
-            columns: ["equipment_id"]
-            isOneToOne: false
-            referencedRelation: "equipment"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pallet_slots_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "warehouse_sections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pallet_slots_shipment_item_id_fkey"
-            columns: ["shipment_item_id"]
-            isOneToOne: false
-            referencedRelation: "shipment_items"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pallets: {
-        Row: {
-          condition: string | null
-          created_at: string
-          created_by: string | null
-          current_weight: number | null
-          deleted_at: string | null
-          deleted_by: string | null
-          id: string
-          max_capacity: number | null
-          notes: string | null
-          pallet_id: string
-          pallet_type: string | null
-          section_id: string
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          condition?: string | null
-          created_at?: string
-          created_by?: string | null
-          current_weight?: number | null
-          deleted_at?: string | null
-          deleted_by?: string | null
-          id?: string
-          max_capacity?: number | null
-          notes?: string | null
-          pallet_id: string
-          pallet_type?: string | null
-          section_id: string
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          condition?: string | null
-          created_at?: string
-          created_by?: string | null
-          current_weight?: number | null
-          deleted_at?: string | null
-          deleted_by?: string | null
-          id?: string
-          max_capacity?: number | null
-          notes?: string | null
-          pallet_id?: string
-          pallet_type?: string | null
-          section_id?: string
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pallets_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "warehouse_sections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      performance_metrics: {
-        Row: {
-          created_at: string
-          id: string
-          metadata: Json | null
-          metric_name: string
-          metric_type: string
-          session_id: string | null
-          user_id: string | null
-          value_ms: number
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          metadata?: Json | null
-          metric_name: string
-          metric_type: string
-          session_id?: string | null
-          user_id?: string | null
-          value_ms: number
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          metadata?: Json | null
-          metric_name?: string
-          metric_type?: string
-          session_id?: string | null
-          user_id?: string | null
-          value_ms?: number
-        }
-        Relationships: []
-      }
-      permission_audit_logs: {
-        Row: {
-          changed_by: string
-          created_at: string
-          id: string
-          new_role: string
-          previous_role: string
-          target_member_id: string | null
-          target_user_id: string
-          workspace_owner_id: string
-        }
-        Insert: {
-          changed_by: string
-          created_at?: string
-          id?: string
-          new_role: string
-          previous_role: string
-          target_member_id?: string | null
-          target_user_id: string
-          workspace_owner_id: string
-        }
-        Update: {
-          changed_by?: string
-          created_at?: string
-          id?: string
-          new_role?: string
-          previous_role?: string
-          target_member_id?: string | null
-          target_user_id?: string
-          workspace_owner_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "permission_audit_logs_target_member_id_fkey"
-            columns: ["target_member_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_events: {
-        Row: {
-          created_at: string
-          event_type: string
-          id: string
+ …2537 tokens truncated…ean
           metadata: Json | null
           user_id: string | null
           workspace_id: string | null
         }
         Insert: {
           created_at?: string
+          dedupe_key?: string | null
+          event_source?: string
           event_type: string
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           user_id?: string | null
           workspace_id?: string | null
         }
         Update: {
           created_at?: string
+          dedupe_key?: string | null
+          event_source?: string
           event_type?: string
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           user_id?: string | null
           workspace_id?: string | null
@@ -5147,6 +4817,7 @@ export type Database = {
           created_at: string
           date_format: string | null
           default_view: string | null
+          exclude_from_metrics: boolean
           has_seed_data: boolean | null
           id: string
           measurement_unit: string | null
@@ -5163,6 +4834,7 @@ export type Database = {
           created_at?: string
           date_format?: string | null
           default_view?: string | null
+          exclude_from_metrics?: boolean
           has_seed_data?: boolean | null
           id?: string
           measurement_unit?: string | null
@@ -5179,6 +4851,7 @@ export type Database = {
           created_at?: string
           date_format?: string | null
           default_view?: string | null
+          exclude_from_metrics?: boolean
           has_seed_data?: boolean | null
           id?: string
           measurement_unit?: string | null
@@ -5310,6 +4983,15 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      launch_funnel_daily: {
+        Row: {
+          event_count: number | null
+          event_date: string | null
+          event_type: string | null
+          workspace_count: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
