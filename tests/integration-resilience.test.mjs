@@ -49,9 +49,14 @@ test("existing outbound AI HTTPS request uses the guarded dispatch boundary", ()
   assert.match(loadPlan, /provider: "https"/);
   assert.match(loadPlan, /capability: "ai\.load_plan"/);
   assert.match(loadPlan, /operation: "lovable\.chat\.completions"/);
+  assert.match(loadPlan, /select\("workspace_owner_id"\)/);
+  assert.match(loadPlan, /eq\("workspace_owner_id", parsed\.workspace_id\)/);
 });
 
 test("owner UI exposes integration resilience controls", () => {
   assert.match(admin, /IntegrationResiliencePanel/);
   assert.match(admin, /value="integrations"/);
+  const panel = read("src/components/admin/IntegrationResiliencePanel.tsx");
+  assert.match(panel, /rules\.some\(\(rule\) => rule\.scope === "all" && rule\.enabled\)/);
+  assert.match(panel, /\.eq\("scope", "all"\)/);
 });
