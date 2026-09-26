@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
 
     const { data: membership, error: membershipError } = await admin
       .from("workspace_members")
-      .select("workspace_id")
-      .eq("workspace_id", parsed.workspace_id)
+      .select("workspace_owner_id")
+      .eq("workspace_owner_id", parsed.workspace_id)
       .eq("user_id", userId)
       .limit(1)
       .maybeSingle();
