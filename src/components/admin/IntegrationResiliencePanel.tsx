@@ -38,11 +38,11 @@ interface CircuitRow {
 }
 
 const KNOWN_PROVIDERS = ["gmail", "slack", "openrouter", "https"];
+const db = supabase as any;
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
 export const IntegrationResiliencePanel = () => {
-  const db = supabase as any;
   const [rules, setRules] = useState<KillSwitchRow[]>([]);
   const [circuits, setCircuits] = useState<CircuitRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +75,7 @@ export const IntegrationResiliencePanel = () => {
   }, [load]);
 
   const globalStop = useMemo(
-    () => rules.find((rule) => rule.scope === "all" && rule.enabled),
+    () => rules.some((rule) => rule.scope === "all" && rule.enabled),
     [rules],
   );
 
@@ -132,7 +132,8 @@ export const IntegrationResiliencePanel = () => {
       ({ error } = await db
         .from("integration_kill_switches")
         .update({ enabled: false, updated_at: new Date().toISOString() })
-        .eq("id", globalStop.id));
+        .eq("scope", "all")
+        .eq("enabled", true));
     }
 
     setSaving(false);
