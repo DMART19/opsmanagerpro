@@ -121,10 +121,10 @@ BEGIN
   WHERE ks.enabled = true
     AND (
       ks.scope = 'all'
-      OR (ks.scope = 'provider' AND lower(ks.provider) = v_provider)
+      OR (ks.scope = 'provider' AND lower(trim(ks.provider)) = v_provider)
       OR (ks.scope = 'company' AND ks.company_id = p_company_id)
-      OR (ks.scope = 'capability' AND lower(ks.capability) = v_capability)
-      OR (ks.scope = 'operation' AND lower(ks.provider) = v_provider AND lower(ks.operation) = v_operation)
+      OR (ks.scope = 'capability' AND lower(trim(ks.capability)) = v_capability)
+      OR (ks.scope = 'operation' AND lower(trim(ks.provider)) = v_provider AND lower(trim(ks.operation)) = v_operation)
     )
   ORDER BY CASE ks.scope
     WHEN 'operation' THEN 5
@@ -206,16 +206,31 @@ AS $$
 DECLARE
   v_provider text := lower(trim(p_provider));
   v_circuit_key text := lower(trim(COALESCE(NULLIF(p_circuit_key, ''), 'global')));
+  v_circuit public.integration_provider_circuits%ROWTYPE;
 BEGIN
-  INSERT INTO public.integration_provider_circuits (
-    provider, circuit_key, state, consecutive_failures, open_count,
-    open_until, half_open_claimed_at, last_success_at, updated_at
-  )
-  VALUES (
-    v_provider, v_circuit_key, 'closed', 0, 0,
-    NULL, NULL, now(), now()
-  )
-  ON CONFLICT (provider, circuit_key) DO UPDATE
+  INSERT INTO public.integration_provider_circuits (provider, circuit_key)
+  VALUES (v_provider, v_circuit_key)
+  ON CONFLICT (provider, circuit_key) DO NOTHING;
+
+  SELECT c.*
+  INTO v_circuit
+  FROM public.integration_provider_circuits c
+  WHERE c.provider = v_provider AND c.circuit_key = v_circuit_key
+  FOR UPDATE;
+
+  -- An old request that started before the circuit opened may succeed after the
+  -- outage threshold was reached. Do not let that stale success close the circuit.
+  IF v_circuit.state = 'open' THEN
+    UPDATE public.integration_provider_circuits
+    SET last_success_at = now(),
+        updated_at = now()
+    WHERE provider = v_provider AND circuit_key = v_circuit_key;
+    RETURN;
+  END IF;
+
+  -- Closed successes clear the rolling failure count. A half-open probe success
+  -- is the only success allowed to transition recovery back to closed.
+  UPDATE public.integration_provider_circuits
   SET state = 'closed',
       consecutive_failures = 0,
       open_count = 0,
@@ -223,7 +238,8 @@ BEGIN
       half_open_claimed_at = NULL,
       last_success_at = now(),
       last_error_code = NULL,
-      updated_at = now();
+      updated_at = now()
+  WHERE provider = v_provider AND circuit_key = v_circuit_key;
 END;
 $$;
 
