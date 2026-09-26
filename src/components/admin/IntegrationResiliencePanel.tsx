@@ -199,7 +199,7 @@ export const IntegrationResiliencePanel = () => {
               </CardDescription>
             </div>
             <Switch
-              checked={Boolean(globalStop)}
+              checked={globalStop}
               disabled={saving || loading}
               onCheckedChange={(checked) => void setGlobalStop(checked)}
               aria-label="Stop all integrations"
