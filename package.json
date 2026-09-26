@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test:security": "node --test tests/phase1-security.test.mjs",
     "test:integration-resilience": "node --test tests/integration-resilience.test.mjs",
-    "test": "npm run test:security && npm run test:integration-resilience"
+    "test": "npm run test:security && npm run test:integration-resilience && npm run test:execution-safety",
+    "test:execution-safety": "node --experimental-strip-types --test tests/idempotency-chaos.test.mjs tests/authorization-property.test.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
