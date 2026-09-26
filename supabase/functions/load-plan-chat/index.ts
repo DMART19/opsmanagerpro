@@ -3,6 +3,10 @@ import { z } from "npm:zod@3.23.8";
 import { buildCorsHeaders, jsonResponse, rejectDisallowedOrigin } from "../_shared/cors.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { checkEntitlement } from "../_shared/entitlements.ts";
+import {
+  dispatchProviderRequest,
+  IntegrationDispatchBlockedError,
+} from "../_shared/integration-resilience.ts";
 
 const MAX_BODY_BYTES = 32 * 1024;
 const MAX_MESSAGES = 20;
@@ -128,14 +132,39 @@ Never invent numbers - only use what's in the context below.
 Current plan context (JSON):
 ${JSON.stringify(parsed.context, null, 2)}`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [{ role: "system", content: systemPrompt }, ...parsed.messages],
-      }),
-    });
+    let resp: Response;
+    try {
+      resp = await dispatchProviderRequest(
+        admin,
+        {
+          companyId: parsed.workspace_id,
+          provider: "https",
+          capability: "ai.load_plan",
+          operation: "lovable.chat.completions",
+          circuitKey: "lovable-ai",
+        },
+        () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [{ role: "system", content: systemPrompt }, ...parsed.messages],
+          }),
+        }),
+      );
+    } catch (error) {
+      if (error instanceof IntegrationDispatchBlockedError) {
+        const status = error.code === "kill_switch" ? 503 : 503;
+        const headers = error.retryAfterSeconds > 0
+          ? { "Retry-After": String(error.retryAfterSeconds) }
+          : {};
+        return jsonResponse(req, {
+          error: "Integration temporarily unavailable",
+          reason: error.code,
+        }, status, headers);
+      }
+      throw error;
+    }
 
     if (resp.status === 429) return jsonResponse(req, { error: "AI rate limit. Try again shortly." }, 429);
     if (resp.status === 402) return jsonResponse(req, { error: "AI credits exhausted." }, 402);

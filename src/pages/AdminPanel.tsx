@@ -1,11 +1,11 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, Activity, Users, BarChart3, CreditCard, ToggleLeft, RefreshCw, Sparkles } from "lucide-react";
+import { Shield, Activity, Users, BarChart3, CreditCard, ToggleLeft, RefreshCw, Sparkles, Power } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { RequirementsAdminTab } from "@/components/settings/RequirementsAdminTab";
+import { IntegrationResiliencePanel } from "@/components/admin/IntegrationResiliencePanel";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const AdminPanel = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <Tabs defaultValue="health" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 h-auto">
             <TabsTrigger value="health" className="text-xs gap-1.5">
               <Activity className="h-3.5 w-3.5" /> Health
             </TabsTrigger>
@@ -51,6 +51,9 @@ const AdminPanel = () => {
             </TabsTrigger>
             <TabsTrigger value="flags" className="text-xs gap-1.5">
               <ToggleLeft className="h-3.5 w-3.5" /> Flags
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="text-xs gap-1.5">
+              <Power className="h-3.5 w-3.5" /> Integrations
             </TabsTrigger>
             <TabsTrigger value="requirements" className="text-xs gap-1.5">
               <Sparkles className="h-3.5 w-3.5" /> Engine
@@ -120,6 +123,10 @@ const AdminPanel = () => {
                 <p className="text-sm text-muted-foreground">Feature flags coming soon.</p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="integrations">
+            <IntegrationResiliencePanel />
           </TabsContent>
 
           <TabsContent value="requirements">
