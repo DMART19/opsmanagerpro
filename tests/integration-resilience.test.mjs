@@ -30,6 +30,8 @@ test("provider circuits are persistent, seeded, and half-open recovery is serial
   assert.match(sql, /half_open_claimed_at/);
   assert.match(sql, /open_until/);
   assert.match(sql, /make_interval/);
+  assert.match(sql, /stale success close the circuit/);
+  assert.match(sql, /IF v_circuit\.state = 'open' THEN/);
 });
 
 test("dispatch wrapper checks authoritative controls before provider I/O", () => {
