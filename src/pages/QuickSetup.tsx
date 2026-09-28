@@ -261,7 +261,6 @@ export default function QuickSetup() {
           last_name: teammateLastName || "Member",
           email: teammateEmail || null,
           position: "Operations team",
-          status: "Active",
         });
         if (employeeError) throw employeeError;
         void trackEvent("first_team_member_added", { onboarding_step: "team" });
