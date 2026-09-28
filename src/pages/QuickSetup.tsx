@@ -268,6 +268,7 @@ export default function QuickSetup() {
 
       const { error: taskError } = await supabase.from("tasks").insert({
         user_id: userId,
+        task_type: "general",
         title: draft.workflowTitle.trim(),
         description: draft.workflowNotes.trim() || "Created during first-run onboarding.",
         start_date: new Date().toISOString(),
