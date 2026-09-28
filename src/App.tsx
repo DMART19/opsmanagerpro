@@ -187,7 +187,7 @@ const AppRoutes = () =>
                 <Route path="/demo/*" element={<Navigate to="/tour" replace />} />
                 <Route path="/tour" element={<PublicTour />} />
                 <Route path="/setup" element={<ProtectedRoute><QuickSetup /></ProtectedRoute>} />
-                      <Route path="/onboarding" element={<Navigate to="/dashboard" replace />} />
+                      <Route path="/onboarding" element={<ProtectedRoute><QuickSetup /></ProtectedRoute>} />
                       <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                       <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
                       <Route path="/inventory/add" element={<ProtectedRoute><AddEquipment /></ProtectedRoute>} />
