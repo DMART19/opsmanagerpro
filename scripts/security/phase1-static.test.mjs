@@ -42,3 +42,11 @@ test("shared CORS is exact-origin and does not reflect untrusted origins", () =>
   assert.doesNotMatch(cors, /Access-Control-Allow-Origin"\s*:\s*"\*"/);
   assert.doesNotMatch(cors, /PREVIEW_PATTERNS/);
 });
+
+test("feature flag catalogue and cross-workspace RPC are restricted", () => {
+  const sql = readFileSync("supabase/migrations/20261027213500_phase1_feature_flag_isolation.sql", "utf8");
+  assert.match(sql, /DROP POLICY IF EXISTS "Authenticated users can read feature flags"/i);
+  assert.match(sql, /v_caller IS NULL/i);
+  assert.match(sql, /p_workspace_id IS DISTINCT FROM public\.get_effective_workspace_id\(\)/i);
+  assert.match(sql, /public\.has_role\(v_caller, 'super_admin'/i);
+});
