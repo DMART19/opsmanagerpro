@@ -111,5 +111,32 @@ BEGIN
   END IF;
 END $test$;
 
+-- Feature-flag SECURITY DEFINER RPC must not accept arbitrary workspace IDs.
+-- Seed false global / true in B, then prove that member of A cannot query B.
+INSERT INTO public.feature_flags (flag_key, name, is_enabled)
+VALUES ('phase1_rls_private_flag', 'Phase 1 private fixture', false);
+INSERT INTO public.workspace_feature_flags (flag_id, workspace_id, is_enabled)
+SELECT id, 'fe100000-0000-4000-8000-000000000002', true
+  FROM public.feature_flags WHERE flag_key = 'phase1_rls_private_flag';
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', 'fe100000-0000-4000-8000-000000000003', true);
+DO $test$
+BEGIN
+  IF public.is_feature_enabled('phase1_rls_private_flag',
+      'fe100000-0000-4000-8000-000000000002') IS DISTINCT FROM false THEN
+    RAISE EXCEPTION 'Feature flag resolver disclosed B workspace override to A';
+  END IF;
+END $test$;
+SELECT set_config('request.jwt.claim.sub', 'fe100000-0000-4000-8000-000000000002', true);
+DO $test$
+BEGIN
+  IF public.is_feature_enabled('phase1_rls_private_flag',
+      'fe100000-0000-4000-8000-000000000002') IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'Feature flag resolver rejected authorized B override';
+  END IF;
+END $test$;
+RESET ROLE;
+
 ROLLBACK;
 -- PASS: every assertion completed and test fixtures were rolled back.
