@@ -13,14 +13,14 @@ Branch: `security/phase1-tenant-isolation-20261027`.
    intentional: unexpected permissive policies must be reviewed, not bypassed.
 2. **Custom fields**: The existing read/manage predicates are retained and the
    two current policies explicitly require `TO authenticated`.
-3. **CORS**: Shared browser CORS now uses exact production/development origins
+3. **Global feature flags**: Removes the broad authenticated catalogue SELECT\n   policy (including if an older Drizzle migration was not applied), and\n   constrains the SECURITY DEFINER resolver to the authenticated caller's\n   workspace or authorized platform super-admin. A rollback-only test checks\n   unauthorized workspace override queries.\n4. **CORS**: Shared browser CORS now uses exact production/development origins
    and an optional exact-origin `CORS_ADDITIONAL_ORIGINS` list. No wildcard
    preview subdomain matching or arbitrary origin reflection.
-4. **Test gates**: Static regression tests, Deno CORS tests, and CI build/lint/
+5. **Test gates**: Static regression tests, Deno CORS tests, and CI build/lint/
    typecheck are added; a separate **rollback-only SQL acceptance test**
    exercises owners, workspace members, forged tenant IDs, read/write isolation,
    and custom-field role scoping.
-5. **Inventory**: `scripts/security/inspect_rls.sql` captures database
+6. **Inventory**: `scripts/security/inspect_rls.sql` captures database
    authorization posture for manual audit.
 
 ## Security limitations / deferred work
