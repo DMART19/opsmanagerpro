@@ -22,4 +22,10 @@ jobs:
         if: always()
       - name: Scan working tree for secrets
         if: always()
-        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 detect --source=/repo --no-git --redact --exit-code 1
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 detect --source=/repo --no-git --redact=100 --report-format=json --report-path=/repo/gitleaks-report.json --exit-code 0
+          node -e 'const fs=require("node:fs"); const findings=JSON.parse(fs.readFileSync("gitleaks-report.json","utf8")); for (const f of findings) console.log(JSON.stringify({rule:f.RuleID,file:f.File,line:f.StartLine,commit:f.Commit})); console.log("Secret scan findings:", findings.length)'
+          count=$(node -e 'const f=JSON.parse(require("node:fs").readFileSync("gitleaks-report.json","utf8")); process.stdout.write(String(f.length))')
+          rm -f gitleaks-report.json
+          test "$count" -eq 0
