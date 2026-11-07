@@ -138,5 +138,35 @@ BEGIN
 END $test$;
 RESET ROLE;
 
+-- A previously authorized member loses access when membership is deactivated.
+UPDATE public.workspace_members SET status = 'inactive'
+ WHERE workspace_owner_id = 'fe100000-0000-4000-8000-000000000001'
+   AND user_id = 'fe100000-0000-4000-8000-000000000003';
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', 'fe100000-0000-4000-8000-000000000003', true);
+DO $test$
+DECLARE affected int;
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.staff WHERE email = 'phase1-a@example.test') THEN
+    RAISE EXCEPTION 'Inactive member can read workspace staff';
+  END IF;
+  UPDATE public.staff SET position = 'forged' WHERE email = 'phase1-a@example.test';
+  GET DIAGNOSTICS affected = ROW_COUNT;
+  IF affected <> 0 THEN RAISE EXCEPTION 'Inactive member can update workspace staff'; END IF;
+  DELETE FROM public.staff WHERE email = 'phase1-a@example.test';
+  GET DIAGNOSTICS affected = ROW_COUNT;
+  IF affected <> 0 THEN RAISE EXCEPTION 'Inactive member can delete workspace staff'; END IF;
+  BEGIN
+    INSERT INTO public.staff (first_name, last_name, email, created_by)
+    VALUES ('Inactive', 'Member', 'phase1-inactive@example.test',
+            'fe100000-0000-4000-8000-000000000001');
+    RAISE EXCEPTION 'Inactive member can insert workspace staff';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+END $test$;
+RESET ROLE;
+
 ROLLBACK;
 -- PASS: every assertion completed and test fixtures were rolled back.
