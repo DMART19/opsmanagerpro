@@ -9,9 +9,9 @@ Revalidate documented findings against current code and live Stripe/Supabase set
 - [ ] Exercise unpaid-account recovery and verify clear billing status.
 
 ## Tenant security
-- [ ] Fix the documented staff PII workspace-scope issue and verify tenant identity derives from trusted auth context.
-- [ ] Restrict custom-field policies to authenticated roles as appropriate.
-- [ ] Add cross-tenant read/write denial tests for every PII-bearing and workspace-owned table.
+- [ ] Reconcile the scanner report against current migrations: staff insert/update policies already include WITH CHECK using has_workspace_permission(created_by, ...), and the helper checks authenticated owner/member context; custom_fields has a later authenticated-only owner-scoped policy. Confirm these migrations are applied in staging/production.
+- [ ] Add and pass adversarial cross-workspace read/write tests for staff PII and custom_fields, including attempts to spoof created_by, anonymous access, inactive membership, and unauthorized role access.
+- [ ] Confirm the live scanner findings clear after migrations are applied; keep unresolved findings blocking release.
 - [ ] Review definer functions, service-role usage, and audit events for tenant-scope bypasses.
 
 ## Operations
