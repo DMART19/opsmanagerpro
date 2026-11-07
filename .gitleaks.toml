@@ -1,0 +1,11 @@
+title = "OpsManagerPro secret scanning"
+
+[allowlist]
+description = "A non-secret localStorage preference key is a generic-api-key false positive"
+regexTarget = "secret"
+regexes = [
+  '''^simplified_inventory_column_visibility_v1$''',
+]
+paths = [
+  '''^src/components/inventory/SimplifiedInventoryTable\.tsx$''',
+]
