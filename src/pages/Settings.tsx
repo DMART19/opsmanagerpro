@@ -120,7 +120,6 @@ const Settings = () => {
       case "data-health":
         return <DataHealthPanel />;
       case "data-export":
-      case "data-export":
         return <DataExportTab />;
       case "access-history":
         return <DataAccessHistoryTab />;
