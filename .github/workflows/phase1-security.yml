@@ -1,0 +1,37 @@
+name: Phase 1 security checks
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [security/phase1-tenant-isolation-20261027]
+
+permissions:
+  contents: read
+
+jobs:
+  static-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --test scripts/security/phase1-static.test.mjs
+      - run: npx tsc --noEmit -p tsconfig.app.json
+      - run: npm run lint
+      - run: npm run build
+
+  cors-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno test --allow-env supabase/functions/_shared/cors_test.ts
+
+# Database RLS acceptance requires an isolated Supabase project, not a
+# generic PostgreSQL service. Run supabase/tests/phase1_staff_rls_acceptance.sql
+# against an ephemeral Supabase DB after applying migrations; never production.

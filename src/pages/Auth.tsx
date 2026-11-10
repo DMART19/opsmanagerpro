@@ -113,7 +113,7 @@ async function resolvePostLoginRedirect(userId: string, isNewSignup = false): Pr
       .eq("id", userId);
 
     // Increment login_count via raw increment
-    await supabase.rpc("increment_login_count", { p_user_id: userId }).catch(() => {});
+    await supabase.rpc("increment_login_count", { p_user_id: userId });
   } catch {
     // Non-critical
   }

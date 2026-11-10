@@ -1,5 +1,5 @@
-// Origin allowlist for browser-callable edge functions.
-// Server-to-server endpoints (webhooks) do not need CORS and are unaffected.
+// Browser CORS allowlist for Edge Functions. This is NOT authorization:
+// every protected handler must independently validate identity and permissions.
 const STATIC_ALLOWED = new Set<string>([
   "https://opsmanagerpro.com",
   "https://www.opsmanagerpro.com",
@@ -10,29 +10,46 @@ const STATIC_ALLOWED = new Set<string>([
   "http://127.0.0.1:5173",
 ]);
 
-// Match Lovable preview subdomains (id-preview--*.lovable.app, *.lovableproject.com).
-const PREVIEW_PATTERNS: RegExp[] = [
-  /^https:\/\/[a-z0-9-]+\.lovable\.app$/i,
-  /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/i,
-];
+// Additional preview/staging origins must be explicitly configured, not
+// accepted by wildcard domain matches. Comma-separated exact origins only.
+// Example: CORS_ADDITIONAL_ORIGINS=https://my-preview.lovable.app
+function configuredOrigins(): Set<string> {
+  const raw = Deno.env.get("CORS_ADDITIONAL_ORIGINS") ?? "";
+  return new Set(
+    raw.split(",").map((value) => value.trim().replace(/\/$/, ""))
+      .filter((value) => {
+        try {
+          const url = new URL(value);
+          return url.origin === value && (
+            url.protocol === "https:" ||
+            (url.protocol === "http:" &&
+              ["localhost", "127.0.0.1"].includes(url.hostname))
+          );
+        } catch {
+          return false;
+        }
+      }),
+  );
+}
 
 export function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
-  if (STATIC_ALLOWED.has(origin)) return true;
-  return PREVIEW_PATTERNS.some((re) => re.test(origin));
+  return STATIC_ALLOWED.has(origin) || configuredOrigins().has(origin);
 }
 
 export function buildCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin");
-  const allow = isAllowedOrigin(origin) ? origin! : "https://opsmanagerpro.com";
-  return {
-    "Access-Control-Allow-Origin": allow,
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
     "Access-Control-Max-Age": "600",
     "Vary": "Origin",
   };
+  if (isAllowedOrigin(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin!;
+  }
+  return headers;
 }
 
 export function jsonResponse(
